@@ -1,0 +1,120 @@
+---
+title: "statistiques générales pour utilisateurs"
+format: html
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r}
+#|label: load_packages
+#|include: false
+#|output: false
+#|echo: false
+#|warning: false
+#|message: false
+#|error: false
+
+library(tidyverse)
+
+```
+
+
+
+
+## Exercice 1.2 Statistiques descriptives
+
+1. Chargement des données pH
+
+```{r}
+#|label: load_data
+
+tib <- read_csv2("data/chap1_ex2.csv") |> tibble()
+pH <- tib$pH
+pH
+
+```
+
+2. **Calcul de la moyenne**
+
+```{r}
+#| label: moyenne
+#| 
+
+tib |> 
+  summarize(moyenne = sum(pH)/n())
+
+sum(pH)/length(pH)
+
+mean(pH)
+
+```
+
+3. **Calcul de la variance**
+
+::: {.callout-note collapse="false"}
+
+Attention la variance est calculée avec la formule $$var=\sum_{i=1}^n \frac{(x_i - \mu)^2}{n-1}$$ et non $$var=\sum_{i=1}^n \frac{(x_i - \mu)^2}{n}$$
+:::
+
+```{r}
+#| label: variance
+#| 
+
+tib |> 
+  summarize(variance = sum((pH - mean(pH))^2 / (n() - 1)))
+
+sum((pH - mean(pH))^2) / (length(pH) - 1)
+
+var(pH)
+
+```
+
+3. **Calcul de l'écart-type**
+
+```{r}
+#| label: ecart_type
+#| 
+
+tib |> 
+  summarize(ecart_type = sqrt(sum((pH - mean(pH))^2 / (n() - 1))))
+
+sqrt(sum((pH - mean(pH))^2) / (length(pH) - 1))
+
+sd(pH)
+
+```
+
+4. Construction d'un histogramme
+
+```{r}
+#|label: histo
+
+hist(pH, main = "Histogramme des pH", xlab = "pH", ylab = "n", xlim = c(335, 425))
+
+tib |> ggplot(aes(x = pH)) +
+  geom_histogram(binwidth = 10, color = "black", fill = "grey80") +
+  theme_bw() +
+  labs(
+    title = "Histogramme des pH",
+    caption = "p.2 Statistiques générales pour utilisateurs - Exercices et corrigés"
+  ) +
+  ylab("n") +
+  xlab("pH")
+  
+
+
+```
+
+5. Construction de boîtes à moustaches
+
+```{r}
+#|label: boxplot
+
+boxplot(pH)
+
+tib |> ggplot(aes(y = pH)) +
+  geom_boxplot()
+
+```
+
