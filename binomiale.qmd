@@ -1,0 +1,132 @@
+---
+title: "binomiale"
+format: html
+editor: visual
+---
+
+**Expérience de 3 lancers de dés successifs**
+
+1. Loi binomiale de paramètres n=3 et p=1/6, ou b(3, 1/6)
+
+  - x : nombre de succès possibles pour `size` tirages successifs (ici $size = 3$)
+  - y : probabilité d'obtenir x fois un succès (ex : la même face pour un lancer de dé) sur `size` essais consécutifs
+
+```{r}
+#|label: binom_size_3_p_un_sizieme
+
+x = 0:3 
+# y : 
+y <- dbinom(x, size = 3, prob = 1/6)
+df <- data.frame(number_of_success = x, prob = y )
+df
+sum(y)
+
+```
+
+En théorie des probabilités et en statistique, la loi binomiale modélise le nombre de succès obtenus lors de la répétition indépendante de plusieurs expériences aléatoires identique. 
+
+**dbinom(x, size, prob, log = FALSE)**
+
+*  size : nombre d'experiences ou trials
+*    x : nombre de succès pour un trial donné
+
+$y=\binom{n}{x}*p^x*(1-p)^{n-x}$
+
+$y=\frac{n!}{(n-x)!x!}*p^x*(1-p)^{n-x}$
+
+exemple : $dbinom(0, size=5, prob=0.25) = \frac{5!}{(5-0)!0!}*0.25^0*(1-0.25)^{5-0} = 0.75^{5}$
+
+représente par exemple la probabilité de ne tirer aucune carte de coeur (nombre de succès=0) dans un jeu de 52 cartes lors de 5 tirages successifs avec remise, le paquet étant remélangé après chaque remise. 
+
+**Ces 5 tirages à eux seuls constituent une seule expérience**.
+
+*Définition 1 :* 
+
+— La loi binomiale, de paramètres n et p, est la loi de probabilité d'une variable aléatoire X égale au nombre de succès rencontrés au cours d'une répétition de n épreuves de Bernoulli, p étant la probabilité de succès dans chacune d'entre elles.
+
+*Définition 2:* 
+
+— La loi binomiale, de paramètres n et p, est la loi de probabilité d'une variable aléatoire X telle que :
+
+$X=Y_1+Y_2+\dots +Y_{n}$ , où $Y_{1},Y_{2},\dots ,Y_{n}$ sont des variables aléatoires indépendantes de loi de Bernoulli de même paramètre p
+
+*Définition 3 :* 
+
+— La loi binomiale, de paramètres n et p, est la loi de probabilité discrète d'une variable aléatoire X dont la fonction de masse est donnée par :
+
+$$ {P} (X=k)=\binom{n}{k}p^{k}q^{n-k}$$ pour $k=0,1\dots ,n$.
+
+On rappelle que des variables aléatoires $Y_{1}$ et $Y_{2}$ de loi discrète sont indépendantes si $\mathbb {P} (Y_{1}=k,Y_{2}=h)=\mathbb {P} (Y_{1}=k)\mathbb {P} (Y_{2}=h)$
+
+```{r}
+#|label: binom_size_5_p_un_quart
+
+x = 0:5 
+# y : 
+y <- dbinom(x, size = 5, prob = 1/4)
+df_binom_size_5_un_quart <- data.frame(number_of_success = x, prob = y )
+df_binom_size_5_un_quart
+sum(y)
+
+```
+
+Il est possible de simuler un grand nombre de fois le résultat de $size$ tirages successifs (avec remise) avec la fonction `rbinom(n, size, prob)`
+
+Le résultat des $n$ expériences de $size$ tirages aboutit à un nombre de succès approximativement égal à la probabilité pour chaque nombre d'occurrences de succès sur chaque expérience (calculé par `dbinom(x, size, prob)` avec x variant de 0 à `size`) multiplié par le nombre total d'expériences ($n$) réalisées .
+
+```{r}
+#label: n_experiences
+#
+# n expériences de size tirages successifs
+# 
+library(ggplot2)
+
+n <- 10000
+size <- 10
+prob <- 0.25
+x <- 0:size
+
+experiences <- rbinom(n = n, size = size, prob = prob)
+head(experiences, n = 20)
+
+table_by_nr_of_success <- table(experiences)
+
+# I must use this variable because table functions doesn't consider 0 occurrence
+
+qty_obtained_by_nr_of_success <- 
+  sapply(
+    0:size, 
+    \(x) {ifelse(x %in% names(table_by_nr_of_success), 
+          table_by_nr_of_success[as.character(x)], 0)
+    }
+  )
+
+qty_expected_by_nr_of_success_expected <-
+  sapply(0:size, \(x) {n * dbinom(x, size = size, prob = prob)})
+
+tib <- tibble::tibble(
+  x = x, 
+  qty_obtained = qty_obtained_by_nr_of_success,
+  qty_expected = qty_expected_by_nr_of_success_expected
+)
+tib
+
+ggplot(data = tib) + 
+  geom_col(
+    mapping = aes(x = x, y = qty_obtained),
+    color = "black", 
+    fill = "orange", 
+    alpha = 0.5,
+    width = 0.3
+  ) +
+  geom_point(
+    mapping = aes(x = x, qty_expected),          
+    color = "red", 
+    size = 2
+  ) +
+  xlab("# of success") +
+  ylab("count")
+  
+```
+
+
