@@ -1,5 +1,5 @@
 ---
-title: "binomiale"
+title: "loi binomiale"
 format: html
 editor: visual
 ---
